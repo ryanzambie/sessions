@@ -1,252 +1,511 @@
-
 import React, { useState, useEffect } from 'react';
 import TrainerCard from './TrainerCard';
+import SearchResults from './SearchResults';
+
+// Typewriter effect component
+function TypeWriter({ text, delay = 100, onComplete }) {
+  const [currentText, setCurrentText] = useState('');
+  const [currentIndex, setCurrentIndex] = useState(0);
+
+  useEffect(() => {
+    if (currentIndex < text.length) {
+      const timeout = setTimeout(() => {
+        setCurrentText(prevText => prevText + text[currentIndex]);
+        setCurrentIndex(prevIndex => prevIndex + 1);
+      }, delay);
+
+      return () => clearTimeout(timeout);
+    } else if (onComplete) {
+      onComplete();
+    }
+  }, [currentIndex, delay, text, onComplete]);
+
+  return <span>{currentText}</span>;
+}
 
 function App() {
-  const [search, setSearch] = useState('');
-  const [activeSearch, setActiveSearch] = useState(null); // 'trainers', 'locations', 'workout'
-  const [location, setLocation] = useState('');
+  const [user, setUser] = useState(null);
+  const [roleSelect, setRoleSelect] = useState('');
+  const [selectedTrainer, setSelectedTrainer] = useState(null);
+  const [showModal, setShowModal] = useState(false);
+  const [showLoginModal, setShowLoginModal] = useState(false);
+  const [booking, setBooking] = useState({ name: '', email: '', phone: '', age: '', notes: '' });
+  const [trainerSearch, setTrainerSearch] = useState('');
+  const [filterLocation, setFilterLocation] = useState('');
+  const [filterSpecialty, setFilterSpecialty] = useState('');
+  const [filterPrice, setFilterPrice] = useState('');
+  const [filterSkill, setFilterSkill] = useState('');
+  const [filterDropdown, setFilterDropdown] = useState('');
+  const [trainers, setTrainers] = useState([]);
+  const [showTypewriter, setShowTypewriter] = useState(true);
+  const [currentPage, setCurrentPage] = useState('home');
+  const [searchQuery, setSearchQuery] = useState('');
 
-
-
-const trainers = [
-  {
-    name: 'Alex Johnson',
-    photo: 'https://randomuser.me/api/portraits/men/32.jpg',
-    bio: 'Former college point guard. Specializes in ball handling and shooting drills.',
-    specialties: ['Shooting', 'Ball Handling', 'Defense'],
-    experience: 8,
-    location: 'Brooklyn, NY',
-    rate: 60,
-  },
-  {
-    name: 'Maria Lee',
-    photo: 'https://randomuser.me/api/portraits/women/44.jpg',
-    bio: 'Certified youth coach. Focused on fundamentals and motivation.',
-    specialties: ['Motivation', 'Fundamentals', 'Teamwork'],
-    experience: 5,
-    location: 'Chicago, IL',
-    rate: 50,
-  },
-  {
-    name: 'Chris Evans',
-    photo: 'https://randomuser.me/api/portraits/men/65.jpg',
-    bio: 'Pro-level trainer with experience in vertical jump and agility.',
-    specialties: ['Vertical Jump', 'Agility', 'Strength'],
-    experience: 10,
-    location: 'Los Angeles, CA',
-    rate: 75,
-  },
-  {
-    name: 'Carlos Silva',
-    photo: 'https://randomuser.me/api/portraits/men/83.jpg',
-    bio: 'Brazilian national team coach. Specializes in footwork and shooting.',
-    specialties: ['Footwork', 'Shooting'],
-    experience: 12,
-    location: 'Rio de Janeiro, Brazil',
-    rate: 80,
-  },
-  {
-    name: 'Emily Carter',
-    photo: 'https://randomuser.me/api/portraits/women/68.jpg',
-    bio: 'Texas high school coach. Focused on youth development.',
-    specialties: ['Youth', 'Development'],
-    experience: 7,
-    location: 'Austin, TX',
-    rate: 55,
-  },
-  {
-    name: 'Peter Kovacs',
-    photo: 'https://randomuser.me/api/portraits/men/22.jpg',
-    bio: 'Hungarian pro trainer. Specializes in European style play.',
-    specialties: ['European Style', 'Passing'],
-    experience: 9,
-    location: 'Budapest, Hungary',
-    rate: 70,
-  },
-  {
-    name: 'Samantha Green',
-    photo: 'https://randomuser.me/api/portraits/women/12.jpg',
-    bio: 'NYC shooting coach. Focused on advanced shooting mechanics.',
-    specialties: ['Shooting', 'Mechanics'],
-    experience: 6,
-    location: 'New York, NY',
-    rate: 65,
-  },
-];
-
-const reviews = [
-  {
-    name: 'John Doe',
-    text: 'Sessions helped me find the perfect trainer and take my game to the next level!',
-    rating: 5,
-  },
-  {
-    name: 'Jane Smith',
-    text: 'I found a great coach through this app. My skills and confidence have improved so much.',
-    rating: 4,
-  },
-  {
-    name: 'Michael Brown',
-    text: 'Great trainers and easy booking. Highly recommend for anyone serious about basketball.',
-    rating: 5,
-  },
-  {
-    name: 'Lisa Turner',
-    text: 'The app is super intuitive and the coaches are top notch!',
-    rating: 5,
-  },
-  {
-    name: 'Kevin Lee',
-    text: 'I improved my shooting thanks to the personalized sessions.',
-    rating: 4,
-  },
-];
-
-
-  // Typewriter animation for the slogan
-  const phrase = 'Book your next session';
-  const [typed, setTyped] = useState('');
   useEffect(() => {
-    let idx = 0;
-    let intervalId = null;
-    let pauseTimeout = null;
-    const type = () => {
-      intervalId = setInterval(() => {
-        if (idx < phrase.length) {
-          setTyped(phrase.slice(0, idx + 1));
-          idx++;
-        } else {
-          clearInterval(intervalId);
-          pauseTimeout = setTimeout(() => {
-            idx = 0;
-            setTyped('');
-            type();
-          }, 1200);
-        }
-      }, 90);
-    };
-    type();
-    return () => {
-      clearInterval(intervalId);
-      clearTimeout(pauseTimeout);
-    };
-  }, [phrase]);
+    // Load mock data immediately for testing
+    const mockTrainers = [
+      {
+        id: 1,
+        name: "Michael Jordan",
+        bio: "Former NBA superstar specializing in shooting fundamentals and mental toughness. Perfect for youth and adult players looking to elevate their game.",
+        specialties: "Shooting, All Around, Skills",
+        location: "Chicago, IL",
+        rate: 150,
+        photo: "https://images.unsplash.com/photo-1546961329-78bef0414d7c?ixlib=rb-4.0.3&auto=format&fit=crop&w=300&h=300&q=80"
+      },
+      {
+        id: 2,
+        name: "Sarah Thompson",
+        bio: "Professional skills coach with 10+ years experience. Specializes in developing young players aged 8-16 with fundamentals and confidence building.",
+        specialties: "Skills, Youth Development",
+        location: "Los Angeles, CA", 
+        rate: 75,
+        photo: "https://images.unsplash.com/photo-1494790108755-2616b612b786?ixlib=rb-4.0.3&auto=format&fit=crop&w=300&h=300&q=80"
+      },
+      {
+        id: 3,
+        name: "Coach Marcus Williams",
+        bio: "Former D1 college player focusing on strength and conditioning for basketball players. Expert in developing explosive power and endurance.",
+        specialties: "Strength and Conditioning, Live Play",
+        location: "Atlanta, GA",
+        rate: 100,
+        photo: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?ixlib=rb-4.0.3&auto=format&fit=crop&w=300&h=300&q=80"
+      },
+      {
+        id: 4,
+        name: "Jessica Chen",
+        bio: "Elite shooting specialist who trained with NBA players. Perfect for players wanting to improve their 3-point shooting and free throw accuracy.",
+        specialties: "Shooting, Skills",
+        location: "San Francisco, CA",
+        rate: 120,
+        photo: "https://images.unsplash.com/photo-1438761681033-6461ffad8d80?ixlib=rb-4.0.3&auto=format&fit=crop&w=300&h=300&q=80"
+      },
+      {
+        id: 5,
+        name: "Coach David Rodriguez",
+        bio: "High school varsity coach with 15 years experience. Specializes in team fundamentals, live game situations, and basketball IQ development.",
+        specialties: "All Around, Live Play, Skills",
+        location: "Miami, FL",
+        rate: 85,
+        photo: "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?ixlib=rb-4.0.3&auto=format&fit=crop&w=300&h=300&q=80"
+      }
+    ];
+    setTrainers(mockTrainers);
+    console.log("Mock trainers loaded:", mockTrainers);
+  }, []);
 
-  // Home page with three options
-  if (!activeSearch) {
+  const filtered = trainers.filter(tr => {
+    const matchesLocation = !filterLocation || tr.location?.toLowerCase().includes(filterLocation.toLowerCase());
+    const matchesSpecialty = !filterSpecialty || (tr.specialties && tr.specialties.toLowerCase().includes(filterSpecialty.toLowerCase()));
+    const matchesPrice = !filterPrice || tr.rate <= Number(filterPrice);
+    const matchesSkill = !filterSkill || tr.bio?.toLowerCase().includes(filterSkill.toLowerCase());
+    let matchesSearch = true;
+    matchesSearch = !trainerSearch || tr.name?.toLowerCase().includes(trainerSearch.toLowerCase());
+    return matchesLocation && matchesSpecialty && matchesPrice && matchesSkill && matchesSearch;
+  });
+
+  const handleBookClick = trainer => {
+    setSelectedTrainer(trainer);
+    if (!user) {
+      setShowLoginModal(true);
+    } else {
+      setShowModal(true);
+    }
+  };
+
+  const handleSearch = (e) => {
+    e.preventDefault();
+    if (trainerSearch.trim()) {
+      setSearchQuery(trainerSearch.trim());
+      setCurrentPage('search');
+    }
+  };
+
+  const handleBackToHome = () => {
+    setCurrentPage('home');
+    setSearchQuery('');
+  };
+
+  // Render search results page
+  if (currentPage === 'search') {
     return (
-      <div style={{ position: 'relative', minHeight: '100vh', minWidth: '100vw', width: '100vw', height: '100vh', color: '#FFF', fontFamily: 'Montserrat, Inter, Arial, sans-serif', overflowY: 'auto', overflowX: 'hidden' }}>
-        {/* Overlay for readability - covers entire scrollable page */}
-        <div style={{ position: 'fixed', top: 0, left: 0, width: '100vw', height: '100%', zIndex: 1, background: 'linear-gradient(180deg, rgba(24,24,24,0.45) 0%, rgba(24,24,24,0.25) 60%, rgba(24,24,24,0.55) 100%)', pointerEvents: 'none', backdropFilter: 'blur(2px)' }}></div>
-        {/* Background Video */}
-        <video autoPlay loop muted playsInline style={{ position: 'fixed', top: 0, left: 0, width: '100vw', height: '100%', objectFit: 'cover', zIndex: 0 }}>
-          <source src="/basketball.mp4" type="video/mp4" />
-        </video>
-        <header style={{ display: 'flex', alignItems: 'center', height: '72px', background: 'transparent', padding: '0 2.5rem', justifyContent: 'space-between', boxShadow: 'none', zIndex: 3, position: 'relative', textShadow: '0 2px 12px #181818, 0 0 8px #000' }}>
-          <h1 style={{ margin: 0, color: '#FFF', fontWeight: 700, fontSize: '2.2rem', fontFamily: 'Bebas Neue, Montserrat, Inter, Arial, sans-serif', letterSpacing: '2px', textTransform: 'uppercase' }}>Sessions</h1>
-          <button style={{ background: '#FFF', color: '#181818', border: 'none', padding: '0.85rem 1.7rem', borderRadius: '10px', cursor: 'pointer', fontSize: '1.08rem', fontWeight: 600, boxShadow: '0 2px 8px rgba(0,0,0,0.10)', transition: 'background 0.2s', marginLeft: '2rem' }}>Login</button>
-        </header>
-        <main style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'flex-start', minHeight: '100vh', zIndex: 2, position: 'relative', paddingTop: '18vh' }}>
-          <h2 style={{ color: '#FFF', fontWeight: 700, fontSize: '2rem', marginBottom: '2rem', fontFamily: 'inherit', letterSpacing: '1px', zIndex: 3, position: 'relative', textShadow: '0 2px 12px #181818, 0 0 8px #000, 0 0 18px #000' }}>{typed}<span style={{ borderRight: '2px solid #FFF', marginLeft: '2px', animation: 'blink 1s steps(1) infinite' }}></span></h2>
-          <style>{`@keyframes blink { 0%, 100% { opacity: 1; } 50% { opacity: 0; } }`}</style>
-          <div style={{ display: 'flex', gap: '2.5rem', marginBottom: '1.2rem', zIndex: 2, position: 'relative', background: 'transparent', borderRadius: '22px', padding: '1.2rem 2rem', textShadow: '0 2px 12px #181818, 0 0 8px #000' }}>
-            <button onClick={() => setActiveSearch('trainers')} style={{ background: 'linear-gradient(135deg, #222 70%, #FFA726 100%)', color: '#FFF', border: '1px solid #FFA726', padding: '2rem 2.5rem', borderRadius: '14px', fontWeight: 700, fontSize: '1.15rem', cursor: 'pointer', boxShadow: '0 2px 8px rgba(0,0,0,0.13)', zIndex: 3, textShadow: '0 2px 8px #181818' }}>Search Trainers</button>
-            <button onClick={() => setActiveSearch('locations')} style={{ background: 'linear-gradient(135deg, #222 70%, #FFA726 100%)', color: '#FFF', border: '1px solid #FFA726', padding: '2rem 2.5rem', borderRadius: '14px', fontWeight: 700, fontSize: '1.15rem', cursor: 'pointer', boxShadow: '0 2px 8px rgba(0,0,0,0.13)', zIndex: 3, textShadow: '0 2px 8px #181818' }}>Search by Location</button>
-            <button onClick={() => setActiveSearch('workout')} style={{ background: 'linear-gradient(135deg, #222 70%, #FFA726 100%)', color: '#FFF', border: '1px solid #FFA726', padding: '2rem 2.5rem', borderRadius: '14px', fontWeight: 700, fontSize: '1.15rem', cursor: 'pointer', boxShadow: '0 2px 8px rgba(0,0,0,0.13)', zIndex: 3, textShadow: '0 2px 8px #181818' }}>Search by Workout</button>
-          </div>
-          {/* Verified Trainers Section - horizontal layout, full screen width */}
-          <section style={{ width: '100vw', minHeight: '100vh', marginTop: '65vh', marginBottom: '0', position: 'relative', zIndex: 3, padding: 0, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', textShadow: '0 2px 12px #181818, 0 0 8px #000', background: 'none' }}>
-            <h2 style={{ color: '#FFA726', fontWeight: 700, fontSize: '2rem', marginBottom: '2.2rem', letterSpacing: '1px', textAlign: 'center' }}>Connect with verified trainers across the globe</h2>
-            <div style={{ display: 'flex', flexDirection: 'row', gap: '2.5rem', width: '100%', alignItems: 'center', justifyContent: 'center', flexWrap: 'wrap' }}>
-              {trainers.slice(0, 5).map((trainer, idx) => (
-                <div key={idx} style={{ background: 'linear-gradient(135deg, #222 70%, #FFA726 100%)', color: '#FFF', borderRadius: '10px', padding: '1.2rem 2.2rem', boxShadow: '0 2px 8px rgba(0,0,0,0.13)', minWidth: 220, maxWidth: 340, textAlign: 'center', fontSize: '1rem', display: 'flex', flexDirection: 'column', alignItems: 'center', border: '1px solid #FFA726', position: 'relative' }}>
-                  <img src={trainer.photo} alt={trainer.name} style={{ width: '64px', height: '64px', borderRadius: '50%', objectFit: 'cover', marginBottom: '0.7rem', border: '2px solid #FFA726' }} />
-                  <div style={{ fontWeight: 700, fontSize: '1.15rem', marginBottom: '0.18rem', color: '#FFA726', letterSpacing: '0.5px' }}>{trainer.name}</div>
-                  <div style={{ fontSize: '0.95rem', marginBottom: '0.25rem', color: '#FFF', fontStyle: 'italic', lineHeight: 1.2 }}>{trainer.location}</div>
-                  <div style={{ position: 'absolute', top: '12px', right: '18px', background: '#FFA726', color: '#222', fontWeight: 700, fontSize: '0.8rem', borderRadius: '6px', padding: '3px 10px', boxShadow: '0 1px 4px rgba(0,0,0,0.10)' }}>Verified</div>
-                </div>
-              ))}
+      <>
+        <SearchResults 
+          searchQuery={searchQuery}
+          trainers={trainers}
+          onBookClick={handleBookClick}
+          user={user}
+          onBack={handleBackToHome}
+        />
+        
+        {/* Booking Modal */}
+        {showModal && selectedTrainer && (
+          <div style={{ position: 'fixed', top: 0, left: 0, width: '100vw', height: '100vh', minWidth: '100vw', minHeight: '100vh', background: 'rgba(24,24,24,0.85)', zIndex: 1000, display: 'flex', alignItems: 'center', justifyContent: 'center', backdropFilter: 'blur(5px)' }}>
+            <div style={{ background: 'linear-gradient(135deg, #2C2C2C, #1A1A1A)', color: '#FFF', borderRadius: '20px', padding: '2.5rem 2.5rem 2rem 2.5rem', minWidth: 340, maxWidth: 420, boxShadow: '0 20px 60px rgba(0,0,0,0.4)', position: 'relative', border: '1px solid rgba(255,255,255,0.1)' }}>
+              <button onClick={() => setShowModal(false)} style={{ position: 'absolute', top: 18, right: 18, background: 'linear-gradient(135deg, #FF6B6B, #FF8E53)', color: '#FFF', border: 'none', borderRadius: '50%', width: 36, height: 36, fontWeight: 700, fontSize: '1.3rem', cursor: 'pointer', boxShadow: '0 4px 15px rgba(255,107,107,0.3)' }}>×</button>
+              <img src={selectedTrainer.photo} alt={selectedTrainer.name} style={{ width: '90px', height: '90px', borderRadius: '50%', objectFit: 'cover', marginBottom: '1.2rem', border: '3px solid #4ECDC4' }} />
+              <h3 style={{ margin: '0.5rem 0', fontWeight: 700, fontSize: '1.4rem' }}>{selectedTrainer.name}</h3>
+              <div style={{ fontSize: '1rem', marginBottom: '0.5rem', color: '#4ECDC4', fontWeight: 500 }}>{selectedTrainer.specialties}</div>
+              <div style={{ fontSize: '0.95rem', marginBottom: '0.5rem', color: 'rgba(255,255,255,0.8)' }}>{selectedTrainer.bio}</div>
+              <div style={{ fontSize: '0.95rem', marginBottom: '0.5rem', color: 'rgba(255,255,255,0.8)' }}>Location: {selectedTrainer.location}</div>
+              <div style={{ fontSize: '0.95rem', marginBottom: '0.5rem', color: '#4ECDC4', fontWeight: 600 }}>Rate: ${selectedTrainer.rate}/hr</div>
+              <form style={{ display: 'flex', flexDirection: 'column', gap: '0.8rem', marginTop: '1.5rem' }} onSubmit={e => {
+                e.preventDefault();
+                fetch('http://localhost:8080/api/bookings', {
+                  method: 'POST',
+                  headers: { 'Content-Type': 'application/json' },
+                  body: JSON.stringify({
+                    student: user ? user.name : booking.name,
+                    trainer: selectedTrainer.id,
+                    status: 'requested',
+                    notes: booking.notes,
+                    email: user ? user.email : booking.email,
+                    phone: booking.phone,
+                    age: booking.age,
+                  })
+                }).then(() => {
+                  setShowModal(false);
+                  setBooking({ name: '', email: '', phone: '', age: '', notes: '' });
+                  alert('Booking submitted!');
+                });
+              }}>
+                <input required type="text" placeholder="Name" value={user ? user.name : booking.name} onChange={e => setBooking(b => ({ ...b, name: e.target.value }))} style={{ padding: '0.8rem 1rem', borderRadius: '10px', border: 'none', fontSize: '1rem', background: 'rgba(255,255,255,0.1)', color: '#FFF', backdropFilter: 'blur(10px)' }} />
+                <input required type="email" placeholder="Email" value={user ? user.email : booking.email} onChange={e => setBooking(b => ({ ...b, email: e.target.value }))} style={{ padding: '0.8rem 1rem', borderRadius: '10px', border: 'none', fontSize: '1rem', background: 'rgba(255,255,255,0.1)', color: '#FFF', backdropFilter: 'blur(10px)' }} />
+                <input required type="tel" placeholder="Phone" value={booking.phone} onChange={e => setBooking(b => ({ ...b, phone: e.target.value }))} style={{ padding: '0.8rem 1rem', borderRadius: '10px', border: 'none', fontSize: '1rem', background: 'rgba(255,255,255,0.1)', color: '#FFF', backdropFilter: 'blur(10px)' }} />
+                <input required type="number" placeholder="Age" value={booking.age} onChange={e => setBooking(b => ({ ...b, age: e.target.value }))} style={{ padding: '0.8rem 1rem', borderRadius: '10px', border: 'none', fontSize: '1rem', background: 'rgba(255,255,255,0.1)', color: '#FFF', backdropFilter: 'blur(10px)' }} />
+                <textarea placeholder="Notes" value={booking.notes} onChange={e => setBooking(b => ({ ...b, notes: e.target.value }))} style={{ padding: '0.8rem 1rem', borderRadius: '10px', border: 'none', fontSize: '1rem', minHeight: 70, background: 'rgba(255,255,255,0.1)', color: '#FFF', backdropFilter: 'blur(10px)', resize: 'vertical' }} />
+                <button type="submit" style={{ background: 'linear-gradient(135deg, #4ECDC4, #44A08D)', color: '#FFF', border: 'none', borderRadius: '12px', padding: '1rem', fontWeight: 700, fontSize: '1.1rem', marginTop: '0.5rem', cursor: 'pointer', boxShadow: '0 4px 15px rgba(78,205,196,0.3)', transition: 'all 0.3s ease' }}>Book Session</button>
+              </form>
             </div>
-          </section>
-
-          {/* Reviews Section - horizontal layout under trainers */}
-          <section style={{ width: '100%', marginTop: '0.5rem', marginBottom: '2.7rem', position: 'relative', zIndex: 3, paddingLeft: '8vw', textShadow: '0 2px 12px #181818, 0 0 8px #000' }}>
-            <h3 style={{ color: '#FFA726', fontWeight: 700, fontSize: '1.15rem', marginBottom: '1.1rem', letterSpacing: '1px' }}>User Reviews</h3>
-            <div style={{ display: 'flex', flexDirection: 'row', gap: '2.5rem', background: 'none', flexWrap: 'wrap', justifyContent: 'flex-start' }}>
-              {reviews.map((review, idx) => (
-                <div key={idx} style={{ background: 'linear-gradient(135deg, #222 70%, #FFA726 100%)', color: '#FFF', borderRadius: '10px', padding: '0.45rem 0.6rem', boxShadow: '0 2px 8px rgba(0,0,0,0.13)', minWidth: 100, maxWidth: 130, textAlign: 'left', fontSize: '0.78rem', display: 'flex', flexDirection: 'column', alignItems: 'flex-start', border: '1px solid #FFA726' }}>
-                  <div style={{ fontWeight: 700, fontSize: '0.85rem', marginBottom: '0.15rem', color: '#FFA726', letterSpacing: '0.5px' }}>{review.name}</div>
-                  <div style={{ fontSize: '0.78rem', marginBottom: '0.2rem', color: '#FFF', fontStyle: 'italic', lineHeight: 1.2 }}>{review.text}</div>
-                  <div style={{ color: '#FFA726', fontSize: '0.85rem', marginTop: '0.08rem', letterSpacing: '1px' }}>{'★'.repeat(review.rating)}{'☆'.repeat(5 - review.rating)}</div>
-                </div>
-              ))}
-            </div>
-          </section>
-        </main>
-      </div>
-    );
-  }
-
-  // Location search page
-  if (activeSearch === 'locations') {
-    return (
-      <div style={{ minHeight: '100vh', minWidth: '100vw', width: '100vw', height: '100vh', background: '#181818', color: '#FFF', fontFamily: 'Montserrat, Inter, Arial, sans-serif', overflow: 'hidden' }}>
-        <header style={{ display: 'flex', alignItems: 'center', height: '72px', background: '#181818', padding: '0 2.5rem', justifyContent: 'space-between', boxShadow: '0 2px 8px rgba(0,0,0,0.08)' }}>
-          <h1 style={{ margin: 0, color: '#FFF', fontWeight: 700, fontSize: '2.2rem', fontFamily: 'Bebas Neue, Montserrat, Inter, Arial, sans-serif', letterSpacing: '2px', textTransform: 'uppercase' }}>Sessions</h1>
-          <button style={{ background: '#FFF', color: '#181818', border: 'none', padding: '0.85rem 1.7rem', borderRadius: '10px', cursor: 'pointer', fontSize: '1.08rem', fontWeight: 600, boxShadow: '0 2px 8px rgba(0,0,0,0.10)', transition: 'background 0.2s', marginLeft: '2rem' }}>Login</button>
-        </header>
-        <main style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', minHeight: '80vh' }}>
-          <button onClick={() => setActiveSearch(null)} style={{ background: '#222', color: '#FFA726', border: 'none', padding: '0.7rem 1.5rem', borderRadius: '8px', fontWeight: 600, fontSize: '1rem', cursor: 'pointer', marginBottom: '2rem' }}>← Back</button>
-          <input type="text" placeholder="Enter a city or location" value={location} onChange={(e) => setLocation(e.target.value)} style={{ padding: '1rem', borderRadius: '12px', border: '1.5px solid #FFA726', width: '320px', fontSize: '1.15rem', textAlign: 'center', background: '#FFF', color: '#181818', marginBottom: '1.5rem' }} />
-          <button style={{ background: '#FFA726', color: '#181818', border: 'none', padding: '0.7rem 1.5rem', borderRadius: '8px', fontWeight: 600, fontSize: '1.05rem', cursor: 'pointer', marginBottom: '2rem' }} disabled={!location.trim()}>Find Trainers</button>
-          {/* You can add location-based trainer results here */}
-        </main>
-      </div>
-    );
-  }
-
-  // Trainers search page
-  if (activeSearch === 'trainers') {
-    return (
-      <div style={{ minHeight: '100vh', minWidth: '100vw', width: '100vw', height: '100vh', background: '#181818', color: '#FFF', fontFamily: 'Montserrat, Inter, Arial, sans-serif', overflow: 'hidden' }}>
-        <header style={{ display: 'flex', alignItems: 'center', height: '72px', background: '#181818', padding: '0 2.5rem', justifyContent: 'space-between', boxShadow: '0 2px 8px rgba(0,0,0,0.08)' }}>
-          <h1 style={{ margin: 0, color: '#FFF', fontWeight: 700, fontSize: '2.2rem', fontFamily: 'Bebas Neue, Montserrat, Inter, Arial, sans-serif', letterSpacing: '2px', textTransform: 'uppercase' }}>Sessions</h1>
-          <button style={{ background: '#FFF', color: '#181818', border: 'none', padding: '0.85rem 1.7rem', borderRadius: '10px', cursor: 'pointer', fontSize: '1.08rem', fontWeight: 600, boxShadow: '0 2px 8px rgba(0,0,0,0.10)', transition: 'background 0.2s', marginLeft: '2rem' }}>Login</button>
-        </header>
-        <main style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', minHeight: '80vh' }}>
-          <button onClick={() => setActiveSearch(null)} style={{ background: '#222', color: '#FFA726', border: 'none', padding: '0.7rem 1.5rem', borderRadius: '8px', fontWeight: 600, fontSize: '1rem', cursor: 'pointer', marginBottom: '2rem' }}>← Back</button>
-          <h2 style={{ color: '#FFA726', fontWeight: 700, fontSize: '1.5rem', marginBottom: '2rem' }}>Trainer Profiles</h2>
-          <div style={{ display: 'flex', gap: '2rem', flexWrap: 'wrap', justifyContent: 'center' }}>
-            {trainers.slice(0, 3).map((trainer, idx) => (
-              <TrainerCard key={idx} trainer={trainer} />
-            ))}
           </div>
-        </main>
-      </div>
+        )}
+
+        {/* Login Modal */}
+        {showLoginModal && (
+          <div style={{ position: 'fixed', top: 0, left: 0, width: '100vw', height: '100vh', minWidth: '100vw', minHeight: '100vh', background: 'rgba(24,24,24,0.85)', zIndex: 1000, display: 'flex', alignItems: 'center', justifyContent: 'center', backdropFilter: 'blur(5px)' }}>
+            <div style={{ background: 'linear-gradient(135deg, #2C2C2C, #1A1A1A)', color: '#FFF', borderRadius: '20px', padding: '2.5rem', minWidth: 340, maxWidth: 420, boxShadow: '0 20px 60px rgba(0,0,0,0.4)', position: 'relative', border: '1px solid rgba(255,255,255,0.1)' }}>
+              <button onClick={() => setShowLoginModal(false)} style={{ position: 'absolute', top: 18, right: 18, background: 'linear-gradient(135deg, #FF6B6B, #FF8E53)', color: '#FFF', border: 'none', borderRadius: '50%', width: 36, height: 36, fontWeight: 700, fontSize: '1.3rem', cursor: 'pointer', boxShadow: '0 4px 15px rgba(255,107,107,0.3)' }}>×</button>
+              <h3 style={{ margin: '0.5rem 0 1.5rem 0', fontWeight: 700, fontSize: '1.6rem', textAlign: 'center' }}>Login</h3>
+              <div style={{ marginBottom: '1.5rem' }}>
+                <label style={{ fontSize: '1rem', marginBottom: '0.5rem', display: 'block', color: 'rgba(255,255,255,0.9)' }}>Select your role:</label>
+                <select value={roleSelect} onChange={e => setRoleSelect(e.target.value)} style={{ padding: '0.8rem 1rem', borderRadius: '10px', fontSize: '1rem', width: '100%', marginBottom: '1rem', background: 'rgba(255,255,255,0.1)', color: '#FFF', border: 'none', backdropFilter: 'blur(10px)' }}>
+                  <option value="" style={{ background: '#2C2C2C', color: '#FFF' }}>Choose...</option>
+                  <option value="student" style={{ background: '#2C2C2C', color: '#FFF' }}>Student</option>
+                  <option value="trainer" style={{ background: '#2C2C2C', color: '#FFF' }}>Trainer</option>
+                  <option value="admin" style={{ background: '#2C2C2C', color: '#FFF' }}>Admin</option>
+                </select>
+              </div>
+              <button 
+                style={{ 
+                  background: roleSelect ? 'linear-gradient(135deg, #4ECDC4, #44A08D)' : 'rgba(255,255,255,0.2)', 
+                  color: '#FFF', 
+                  border: 'none', 
+                  borderRadius: '12px', 
+                  padding: '0.9rem', 
+                  fontWeight: 700, 
+                  fontSize: '1.1rem', 
+                  width: '100%', 
+                  cursor: roleSelect ? 'pointer' : 'not-allowed', 
+                  boxShadow: roleSelect ? '0 4px 15px rgba(78,205,196,0.3)' : 'none',
+                  transition: 'all 0.3s ease'
+                }} 
+                disabled={!roleSelect}
+                onClick={() => { 
+                  setUser({ name: 'Demo User', email: 'demo@example.com', role: roleSelect }); 
+                  setShowLoginModal(false); 
+                  if (selectedTrainer) {
+                    setShowModal(true);
+                  }
+                }}
+              >
+                Login
+              </button>
+            </div>
+          </div>
+        )}
+      </>
     );
   }
 
-  // Workout search page
-  if (activeSearch === 'workout') {
-    return (
-      <div style={{ minHeight: '100vh', minWidth: '100vw', width: '100vw', height: '100vh', background: '#181818', color: '#FFF', fontFamily: 'Montserrat, Inter, Arial, sans-serif', overflow: 'hidden' }}>
-        <header style={{ display: 'flex', alignItems: 'center', height: '72px', background: '#181818', padding: '0 2.5rem', justifyContent: 'space-between', boxShadow: '0 2px 8px rgba(0,0,0,0.08)' }}>
-          <h1 style={{ margin: 0, color: '#FFF', fontWeight: 700, fontSize: '2.2rem', fontFamily: 'Bebas Neue, Montserrat, Inter, Arial, sans-serif', letterSpacing: '2px', textTransform: 'uppercase' }}>Sessions</h1>
-          <button style={{ background: '#FFF', color: '#181818', border: 'none', padding: '0.85rem 1.7rem', borderRadius: '10px', cursor: 'pointer', fontSize: '1.08rem', fontWeight: 600, boxShadow: '0 2px 8px rgba(0,0,0,0.10)', transition: 'background 0.2s', marginLeft: '2rem' }}>Login</button>
-        </header>
-        <main style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', minHeight: '80vh' }}>
-          <button onClick={() => setActiveSearch(null)} style={{ background: '#222', color: '#FFA726', border: 'none', padding: '0.7rem 1.5rem', borderRadius: '8px', fontWeight: 600, fontSize: '1rem', cursor: 'pointer', marginBottom: '2rem' }}>← Back</button>
-          <input type="text" placeholder="Enter workout type" value={search} onChange={(e) => setSearch(e.target.value)} style={{ padding: '1rem', borderRadius: '12px', border: '1px solid #FFA726', width: '320px', fontSize: '1.15rem', textAlign: 'center', background: '#FFF', color: '#181818', marginBottom: '1.5rem' }} />
-          <button style={{ background: '#FFA726', color: '#181818', border: 'none', padding: '0.7rem 1.5rem', borderRadius: '8px', fontWeight: 600, fontSize: '1.05rem', cursor: 'pointer', marginBottom: '2rem' }} disabled={!search.trim()}>Find Trainers</button>
-          {/* You can add workout-based trainer results here */}
-        </main>
-      </div>
-    );
-  }
+  return (
+    <div style={{ 
+      minHeight: '100vh', 
+      minWidth: '100vw', 
+      width: '100vw', 
+      height: '100vh', 
+      background: '#181818', 
+      color: '#FFF', 
+      overflow: 'hidden', 
+      position: 'relative', 
+      fontFamily: "'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" 
+    }}>
+      {/* Video Background - Local Basketball Video */}
+      <video 
+        autoPlay 
+        muted 
+        loop 
+        playsInline
+        preload="auto"
+        onError={(e) => console.log('Video error:', e)}
+        onLoadStart={() => console.log('Video loading started')}
+        onCanPlay={() => console.log('Video can play')}
+        style={{
+          position: 'fixed',
+          top: 0,
+          left: 0,
+          width: '100%',
+          height: '100%',
+          objectFit: 'cover',
+          zIndex: 1,
+          opacity: 0.8
+        }}
+      >
+        <source src="/basketball.mp4" type="video/mp4" />
+        {/* Fallback for if video doesn't load */}
+        Your browser does not support the video tag.
+      </video>
+      
+      {/* Dark overlay for better text readability */}
+      <div style={{
+        position: 'fixed',
+        top: 0,
+        left: 0,
+        width: '100%',
+        height: '100%',
+        background: 'linear-gradient(135deg, rgba(24,24,24,0.3) 0%, rgba(0,0,0,0.2) 100%)',
+        zIndex: 2
+      }}></div>
 
-  return null;
+      <header style={{ 
+        display: 'flex', 
+        alignItems: 'center', 
+        height: '80px', 
+        padding: '0 3rem', 
+        justifyContent: 'space-between', 
+        position: 'relative', 
+        zIndex: 20 
+      }}>
+        <h1 style={{ 
+          margin: 0, 
+          color: '#FFF', 
+          fontWeight: 800, 
+          fontSize: '2.5rem', 
+          letterSpacing: '-1px', 
+          fontFamily: "'Inter', sans-serif" 
+        }}>Sessions</h1>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
+          {user ? (
+            <>
+              <span style={{ color: '#FFF', fontSize: '1.1rem', fontWeight: 500 }}>Welcome, {user.name}</span>
+              <button style={{ 
+                background: 'linear-gradient(135deg, #FF6B6B, #FF8E53)', 
+                color: '#FFF', 
+                border: 'none', 
+                padding: '0.9rem 2rem', 
+                borderRadius: '12px', 
+                cursor: 'pointer', 
+                fontSize: '1.1rem', 
+                fontWeight: 600, 
+                boxShadow: '0 4px 15px rgba(255,107,107,0.3)', 
+                transition: 'all 0.3s ease' 
+              }} onClick={() => setUser(null)}>Logout</button>
+            </>
+          ) : (
+            <button style={{ 
+              background: 'linear-gradient(135deg, #4ECDC4, #44A08D)', 
+              color: '#FFF', 
+              border: 'none', 
+              padding: '0.9rem 2rem', 
+              borderRadius: '12px', 
+              cursor: 'pointer', 
+              fontSize: '1.1rem', 
+              fontWeight: 600, 
+              boxShadow: '0 4px 15px rgba(78,205,196,0.3)', 
+              transition: 'all 0.3s ease' 
+            }} onClick={() => setShowLoginModal(true)}>Login</button>
+          )}
+        </div>
+      </header>
+
+      <main style={{ 
+        display: 'flex', 
+        flexDirection: 'column', 
+        alignItems: 'center', 
+        justifyContent: 'flex-start', 
+        minHeight: 'calc(100vh - 80px)', 
+        minWidth: '100vw', 
+        width: '100vw', 
+        paddingTop: '4vh', 
+        overflow: 'auto', 
+        position: 'relative', 
+        zIndex: 10 
+      }}>
+        {/* Hero Section with Typewriter */}
+        <div style={{ textAlign: 'center', marginBottom: '2rem', maxWidth: '800px', padding: '0 2rem' }}>
+          <h2 style={{ 
+            fontWeight: 800, 
+            fontSize: 'clamp(2.5rem, 5vw, 4rem)', 
+            marginBottom: '1.5rem', 
+            background: 'linear-gradient(135deg, #FF6B6B, #4ECDC4, #45B7D1)', 
+            WebkitBackgroundClip: 'text', 
+            WebkitTextFillColor: 'transparent',
+            backgroundClip: 'text',
+            lineHeight: 1.2,
+            letterSpacing: '-2px'
+          }}>
+            {showTypewriter ? (
+              <TypeWriter 
+                text="Book Your Trainer" 
+                delay={150} 
+                onComplete={() => setShowTypewriter(false)}
+              />
+            ) : (
+              "Book Your Trainer"
+            )}
+          </h2>
+          <p style={{ 
+            fontSize: '1.4rem', 
+            color: 'rgba(255,255,255,0.9)', 
+            fontWeight: 400, 
+            lineHeight: 1.6,
+            marginBottom: '3rem',
+            textShadow: '2px 2px 8px rgba(0,0,0,0.7), 0 0 20px rgba(0,0,0,0.5)'
+          }}>
+            Find the perfect basketball trainer to elevate your game to the next level
+          </p>
+        </div>
+
+        {/* Search Section */}
+        <div style={{ marginBottom: '1.5rem', textAlign: 'center' }}>
+          <form onSubmit={handleSearch} style={{ display: 'flex', flexDirection: 'row', alignItems: 'center', gap: '1.5rem', marginBottom: '2rem', width: '100%', justifyContent: 'center', flexWrap: 'wrap' }}>
+            <input 
+              type="text" 
+              placeholder="Describe the trainer you want" 
+              value={trainerSearch} 
+              onChange={e => setTrainerSearch(e.target.value)} 
+              style={{ 
+                padding: '1.2rem 1.5rem', 
+                borderRadius: '15px', 
+                border: 'none', 
+                width: '350px', 
+                fontSize: '1.15rem', 
+                textAlign: 'center', 
+                background: 'rgba(255,255,255,0.95)', 
+                color: '#181818', 
+                boxShadow: '0 8px 25px rgba(0,0,0,0.15)',
+                backdropFilter: 'blur(10px)',
+                fontWeight: 500
+              }} 
+            />
+            <button 
+              type="submit"
+              style={{ 
+                background: 'linear-gradient(135deg, #FF6B6B, #FF8E53)', 
+                color: '#FFF', 
+                border: 'none', 
+                padding: '1.2rem 2rem', 
+                borderRadius: '15px', 
+                cursor: 'pointer', 
+                fontSize: '1.15rem', 
+                fontWeight: 600, 
+                boxShadow: '0 8px 25px rgba(255,107,107,0.3)',
+                transition: 'all 0.3s ease'
+              }}
+            >
+              Search
+            </button>
+          </form>
+        </div>
+
+      </main>
+
+      {/* Booking Modal */}
+      {showModal && selectedTrainer && (
+        <div style={{ position: 'fixed', top: 0, left: 0, width: '100vw', height: '100vh', minWidth: '100vw', minHeight: '100vh', background: 'rgba(24,24,24,0.85)', zIndex: 1000, display: 'flex', alignItems: 'center', justifyContent: 'center', backdropFilter: 'blur(5px)' }}>
+          <div style={{ background: 'linear-gradient(135deg, #2C2C2C, #1A1A1A)', color: '#FFF', borderRadius: '20px', padding: '2.5rem 2.5rem 2rem 2.5rem', minWidth: 340, maxWidth: 420, boxShadow: '0 20px 60px rgba(0,0,0,0.4)', position: 'relative', border: '1px solid rgba(255,255,255,0.1)' }}>
+            <button onClick={() => setShowModal(false)} style={{ position: 'absolute', top: 18, right: 18, background: 'linear-gradient(135deg, #FF6B6B, #FF8E53)', color: '#FFF', border: 'none', borderRadius: '50%', width: 36, height: 36, fontWeight: 700, fontSize: '1.3rem', cursor: 'pointer', boxShadow: '0 4px 15px rgba(255,107,107,0.3)' }}>×</button>
+            <img src={selectedTrainer.photo} alt={selectedTrainer.name} style={{ width: '90px', height: '90px', borderRadius: '50%', objectFit: 'cover', marginBottom: '1.2rem', border: '3px solid #4ECDC4' }} />
+            <h3 style={{ margin: '0.5rem 0', fontWeight: 700, fontSize: '1.4rem' }}>{selectedTrainer.name}</h3>
+            <div style={{ fontSize: '1rem', marginBottom: '0.5rem', color: '#4ECDC4', fontWeight: 500 }}>{selectedTrainer.specialties}</div>
+            <div style={{ fontSize: '0.95rem', marginBottom: '0.5rem', color: 'rgba(255,255,255,0.8)' }}>{selectedTrainer.bio}</div>
+            <div style={{ fontSize: '0.95rem', marginBottom: '0.5rem', color: 'rgba(255,255,255,0.8)' }}>Location: {selectedTrainer.location}</div>
+            <div style={{ fontSize: '0.95rem', marginBottom: '0.5rem', color: '#4ECDC4', fontWeight: 600 }}>Rate: ${selectedTrainer.rate}/hr</div>
+            <form style={{ display: 'flex', flexDirection: 'column', gap: '0.8rem', marginTop: '1.5rem' }} onSubmit={e => {
+              e.preventDefault();
+              fetch('http://localhost:8080/api/bookings', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                  student: user ? user.name : booking.name,
+                  trainer: selectedTrainer.id,
+                  status: 'requested',
+                  notes: booking.notes,
+                  email: user ? user.email : booking.email,
+                  phone: booking.phone,
+                  age: booking.age,
+                })
+              }).then(() => {
+                setShowModal(false);
+                setBooking({ name: '', email: '', phone: '', age: '', notes: '' });
+                alert('Booking submitted!');
+              });
+            }}>
+              <input required type="text" placeholder="Name" value={user ? user.name : booking.name} onChange={e => setBooking(b => ({ ...b, name: e.target.value }))} style={{ padding: '0.8rem 1rem', borderRadius: '10px', border: 'none', fontSize: '1rem', background: 'rgba(255,255,255,0.1)', color: '#FFF', backdropFilter: 'blur(10px)' }} />
+              <input required type="email" placeholder="Email" value={user ? user.email : booking.email} onChange={e => setBooking(b => ({ ...b, email: e.target.value }))} style={{ padding: '0.8rem 1rem', borderRadius: '10px', border: 'none', fontSize: '1rem', background: 'rgba(255,255,255,0.1)', color: '#FFF', backdropFilter: 'blur(10px)' }} />
+              <input required type="tel" placeholder="Phone" value={booking.phone} onChange={e => setBooking(b => ({ ...b, phone: e.target.value }))} style={{ padding: '0.8rem 1rem', borderRadius: '10px', border: 'none', fontSize: '1rem', background: 'rgba(255,255,255,0.1)', color: '#FFF', backdropFilter: 'blur(10px)' }} />
+              <input required type="number" placeholder="Age" value={booking.age} onChange={e => setBooking(b => ({ ...b, age: e.target.value }))} style={{ padding: '0.8rem 1rem', borderRadius: '10px', border: 'none', fontSize: '1rem', background: 'rgba(255,255,255,0.1)', color: '#FFF', backdropFilter: 'blur(10px)' }} />
+              <textarea placeholder="Notes" value={booking.notes} onChange={e => setBooking(b => ({ ...b, notes: e.target.value }))} style={{ padding: '0.8rem 1rem', borderRadius: '10px', border: 'none', fontSize: '1rem', minHeight: 70, background: 'rgba(255,255,255,0.1)', color: '#FFF', backdropFilter: 'blur(10px)', resize: 'vertical' }} />
+              <button type="submit" style={{ background: 'linear-gradient(135deg, #4ECDC4, #44A08D)', color: '#FFF', border: 'none', borderRadius: '12px', padding: '1rem', fontWeight: 700, fontSize: '1.1rem', marginTop: '0.5rem', cursor: 'pointer', boxShadow: '0 4px 15px rgba(78,205,196,0.3)', transition: 'all 0.3s ease' }}>Book Session</button>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* Login Modal */}
+      {showLoginModal && (
+        <div style={{ position: 'fixed', top: 0, left: 0, width: '100vw', height: '100vh', minWidth: '100vw', minHeight: '100vh', background: 'rgba(24,24,24,0.85)', zIndex: 1000, display: 'flex', alignItems: 'center', justifyContent: 'center', backdropFilter: 'blur(5px)' }}>
+          <div style={{ background: 'linear-gradient(135deg, #2C2C2C, #1A1A1A)', color: '#FFF', borderRadius: '20px', padding: '2.5rem', minWidth: 340, maxWidth: 420, boxShadow: '0 20px 60px rgba(0,0,0,0.4)', position: 'relative', border: '1px solid rgba(255,255,255,0.1)' }}>
+            <button onClick={() => setShowLoginModal(false)} style={{ position: 'absolute', top: 18, right: 18, background: 'linear-gradient(135deg, #FF6B6B, #FF8E53)', color: '#FFF', border: 'none', borderRadius: '50%', width: 36, height: 36, fontWeight: 700, fontSize: '1.3rem', cursor: 'pointer', boxShadow: '0 4px 15px rgba(255,107,107,0.3)' }}>×</button>
+            <h3 style={{ margin: '0.5rem 0 1.5rem 0', fontWeight: 700, fontSize: '1.6rem', textAlign: 'center' }}>Login</h3>
+            <div style={{ marginBottom: '1.5rem' }}>
+              <label style={{ fontSize: '1rem', marginBottom: '0.5rem', display: 'block', color: 'rgba(255,255,255,0.9)' }}>Select your role:</label>
+              <select value={roleSelect} onChange={e => setRoleSelect(e.target.value)} style={{ padding: '0.8rem 1rem', borderRadius: '10px', fontSize: '1rem', width: '100%', marginBottom: '1rem', background: 'rgba(255,255,255,0.1)', color: '#FFF', border: 'none', backdropFilter: 'blur(10px)' }}>
+                <option value="" style={{ background: '#2C2C2C', color: '#FFF' }}>Choose...</option>
+                <option value="student" style={{ background: '#2C2C2C', color: '#FFF' }}>Student</option>
+                <option value="trainer" style={{ background: '#2C2C2C', color: '#FFF' }}>Trainer</option>
+                <option value="admin" style={{ background: '#2C2C2C', color: '#FFF' }}>Admin</option>
+              </select>
+            </div>
+            <button 
+              style={{ 
+                background: roleSelect ? 'linear-gradient(135deg, #4ECDC4, #44A08D)' : 'rgba(255,255,255,0.2)', 
+                color: '#FFF', 
+                border: 'none', 
+                borderRadius: '12px', 
+                padding: '0.9rem', 
+                fontWeight: 700, 
+                fontSize: '1.1rem', 
+                width: '100%', 
+                cursor: roleSelect ? 'pointer' : 'not-allowed', 
+                boxShadow: roleSelect ? '0 4px 15px rgba(78,205,196,0.3)' : 'none',
+                transition: 'all 0.3s ease'
+              }} 
+              disabled={!roleSelect}
+              onClick={() => { 
+                setUser({ name: 'Demo User', email: 'demo@example.com', role: roleSelect }); 
+                setShowLoginModal(false); 
+                if (selectedTrainer) {
+                  setShowModal(true);
+                }
+              }}
+            >
+              Login
+            </button>
+          </div>
+        </div>
+      )}
+    </div>
+  );
 }
 
 export default App;
-
