@@ -12,11 +12,7 @@ public class SecurityConfig {
         http
             .csrf().disable()
             .authorizeRequests()
-                .antMatchers("/api/admin/**").hasRole("ADMIN")
-                .antMatchers("/api/**").authenticated()
-                .anyRequest().permitAll()
-            .and()
-            .oauth2Login();
+                .anyRequest().permitAll();
         return http.build();
     }
 }

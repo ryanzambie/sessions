@@ -346,13 +346,167 @@ function SearchResults({ searchQuery, trainers, onBookClick, user, onBack }) {
           justifyContent: 'center' 
         }}>
           {filteredTrainers.length === 0 ? (
-            <div style={{ 
-              textAlign: 'center', 
-              color: 'rgba(255,255,255,0.7)', 
-              fontSize: '1.2rem',
-              padding: '3rem'
-            }}>
-              No trainers match your search criteria. Try adjusting your filters.
+            <div style={{ width: '100%' }}>
+              <div style={{ 
+                textAlign: 'center', 
+                color: 'rgba(255,255,255,0.7)', 
+                fontSize: '1.2rem',
+                padding: '2rem 0 1rem 0'
+              }}>
+                No trainers match your search criteria.
+              </div>
+              
+              <h3 style={{ 
+                textAlign: 'center', 
+                fontSize: '1.4rem', 
+                fontWeight: 600, 
+                color: '#4ECDC4',
+                marginBottom: '1.5rem'
+              }}>
+                Here are some suggested trainers:
+              </h3>
+              
+              <div style={{ 
+                display: 'flex', 
+                gap: '1.5rem', 
+                flexWrap: 'wrap', 
+                justifyContent: 'center' 
+              }}>
+                {/* Suggested Trainers - Hard coded */}
+                {[
+                  {
+                    id: 99,
+                    name: "Sarah Thompson",
+                    bio: "Professional skills coach with 10+ years experience. Specializes in developing young players aged 8-16.",
+                    specialties: "Skills, Youth Development",
+                    location: "Los Angeles, CA", 
+                    rate: 75,
+                    photo: "https://images.unsplash.com/photo-1494790108755-2616b612b786?ixlib=rb-4.0.3&auto=format&fit=crop&w=300&h=300&q=80"
+                  },
+                  {
+                    id: 100,
+                    name: "Coach Marcus Williams",
+                    bio: "Former D1 college player focusing on strength and conditioning for basketball players.",
+                    specialties: "Strength and Conditioning, Live Play",
+                    location: "Atlanta, GA",
+                    rate: 100,
+                    photo: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?ixlib=rb-4.0.3&auto=format&fit=crop&w=300&h=300&q=80"
+                  },
+                  {
+                    id: 101,
+                    name: "Jessica Chen",
+                    bio: "Elite shooting specialist who trained with NBA players. Perfect for improving 3-point shooting.",
+                    specialties: "Shooting, Skills",
+                    location: "San Francisco, CA",
+                    rate: 120,
+                    photo: "https://images.unsplash.com/photo-1438761681033-6461ffad8d80?ixlib=rb-4.0.3&auto=format&fit=crop&w=300&h=300&q=80"
+                  }
+                ].map((trainer, idx) => {
+                  try {
+                    return (
+                      <div 
+                        key={trainer.id}
+                        style={{
+                          background: 'linear-gradient(135deg, #2C2C2C, #1A1A1A)',
+                          color: '#FFF',
+                          borderRadius: '12px',
+                          padding: '1.2rem',
+                          margin: '0.5rem',
+                          minWidth: '220px',
+                          maxWidth: '260px',
+                          display: 'flex',
+                          flexDirection: 'column',
+                          alignItems: 'center',
+                          boxShadow: '0 6px 20px rgba(0,0,0,0.3)',
+                          border: '1px solid rgba(255,255,255,0.1)',
+                          transition: 'transform 0.3s ease'
+                        }}
+                      >
+                        <img 
+                          src={trainer.photo} 
+                          alt={trainer.name}
+                          style={{
+                            width: '60px',
+                            height: '60px',
+                            borderRadius: '50%',
+                            objectFit: 'cover',
+                            marginBottom: '0.8rem',
+                            border: '2px solid #4ECDC4'
+                          }}
+                          onError={(e) => {
+                            e.target.style.display = 'none';
+                          }}
+                        />
+                        <h3 style={{
+                          margin: '0.3rem 0',
+                          fontWeight: 700,
+                          fontSize: '1.1rem',
+                          textAlign: 'center'
+                        }}>
+                          {trainer.name}
+                        </h3>
+                        <div style={{
+                          fontSize: '0.9rem',
+                          marginBottom: '0.4rem',
+                          color: '#4ECDC4',
+                          fontWeight: 500,
+                          textAlign: 'center'
+                        }}>
+                          {trainer.specialties}
+                        </div>
+                        <div style={{
+                          fontSize: '0.8rem',
+                          marginBottom: '0.4rem',
+                          color: 'rgba(255,255,255,0.8)',
+                          textAlign: 'center',
+                          lineHeight: 1.3
+                        }}>
+                          {trainer.bio && trainer.bio.length > 80 ? 
+                            trainer.bio.substring(0, 80) + '...' : 
+                            trainer.bio
+                          }
+                        </div>
+                        <div style={{
+                          fontSize: '0.8rem',
+                          marginBottom: '0.4rem',
+                          color: 'rgba(255,255,255,0.8)'
+                        }}>
+                          📍 {trainer.location}
+                        </div>
+                        <div style={{
+                          fontSize: '1rem',
+                          marginBottom: '0.8rem',
+                          color: '#4ECDC4',
+                          fontWeight: 600
+                        }}>
+                          ${trainer.rate}/hr
+                        </div>
+                        <button
+                          onClick={() => onBookClick(trainer)}
+                          style={{
+                            background: 'linear-gradient(135deg, #4ECDC4, #44A08D)',
+                            color: '#FFF',
+                            border: 'none',
+                            borderRadius: '8px',
+                            padding: '0.6rem 1.2rem',
+                            fontWeight: 600,
+                            fontSize: '0.9rem',
+                            cursor: 'pointer',
+                            boxShadow: '0 3px 12px rgba(78,205,196,0.3)',
+                            transition: 'all 0.3s ease',
+                            width: '100%'
+                          }}
+                        >
+                          Book Session
+                        </button>
+                      </div>
+                    );
+                  } catch (error) {
+                    console.error('Error rendering suggested trainer card:', error);
+                    return null;
+                  }
+                })}
+              </div>
             </div>
           ) : (
             filteredTrainers.map((trainer, idx) => {
@@ -363,15 +517,15 @@ function SearchResults({ searchQuery, trainers, onBookClick, user, onBack }) {
                     style={{
                       background: 'linear-gradient(135deg, #2C2C2C, #1A1A1A)',
                       color: '#FFF',
-                      borderRadius: '15px',
-                      padding: '1.5rem',
+                      borderRadius: '12px',
+                      padding: '1.2rem',
                       margin: '0.5rem',
-                      minWidth: '280px',
-                      maxWidth: '320px',
+                      minWidth: '220px',
+                      maxWidth: '260px',
                       display: 'flex',
                       flexDirection: 'column',
                       alignItems: 'center',
-                      boxShadow: '0 8px 25px rgba(0,0,0,0.3)',
+                      boxShadow: '0 6px 20px rgba(0,0,0,0.3)',
                       border: '1px solid rgba(255,255,255,0.1)',
                       transition: 'transform 0.3s ease'
                     }}
@@ -380,28 +534,28 @@ function SearchResults({ searchQuery, trainers, onBookClick, user, onBack }) {
                       src={trainer.photo} 
                       alt={trainer.name}
                       style={{
-                        width: '80px',
-                        height: '80px',
+                        width: '60px',
+                        height: '60px',
                         borderRadius: '50%',
                         objectFit: 'cover',
-                        marginBottom: '1rem',
-                        border: '3px solid #4ECDC4'
+                        marginBottom: '0.8rem',
+                        border: '2px solid #4ECDC4'
                       }}
                       onError={(e) => {
                         e.target.style.display = 'none';
                       }}
                     />
                     <h3 style={{
-                      margin: '0.5rem 0',
+                      margin: '0.3rem 0',
                       fontWeight: 700,
-                      fontSize: '1.3rem',
+                      fontSize: '1.1rem',
                       textAlign: 'center'
                     }}>
                       {trainer.name}
                     </h3>
                     <div style={{
-                      fontSize: '1rem',
-                      marginBottom: '0.5rem',
+                      fontSize: '0.9rem',
+                      marginBottom: '0.4rem',
                       color: '#4ECDC4',
                       fontWeight: 500,
                       textAlign: 'center'
@@ -409,27 +563,27 @@ function SearchResults({ searchQuery, trainers, onBookClick, user, onBack }) {
                       {trainer.specialties}
                     </div>
                     <div style={{
-                      fontSize: '0.9rem',
-                      marginBottom: '0.5rem',
+                      fontSize: '0.8rem',
+                      marginBottom: '0.4rem',
                       color: 'rgba(255,255,255,0.8)',
                       textAlign: 'center',
-                      lineHeight: 1.4
+                      lineHeight: 1.3
                     }}>
-                      {trainer.bio && trainer.bio.length > 100 ? 
-                        trainer.bio.substring(0, 100) + '...' : 
+                      {trainer.bio && trainer.bio.length > 80 ? 
+                        trainer.bio.substring(0, 80) + '...' : 
                         trainer.bio
                       }
                     </div>
                     <div style={{
-                      fontSize: '0.9rem',
-                      marginBottom: '0.5rem',
+                      fontSize: '0.8rem',
+                      marginBottom: '0.4rem',
                       color: 'rgba(255,255,255,0.8)'
                     }}>
                       📍 {trainer.location}
                     </div>
                     <div style={{
-                      fontSize: '1.1rem',
-                      marginBottom: '1rem',
+                      fontSize: '1rem',
+                      marginBottom: '0.8rem',
                       color: '#4ECDC4',
                       fontWeight: 600
                     }}>
@@ -441,12 +595,12 @@ function SearchResults({ searchQuery, trainers, onBookClick, user, onBack }) {
                         background: 'linear-gradient(135deg, #4ECDC4, #44A08D)',
                         color: '#FFF',
                         border: 'none',
-                        borderRadius: '10px',
-                        padding: '0.8rem 1.5rem',
+                        borderRadius: '8px',
+                        padding: '0.6rem 1.2rem',
                         fontWeight: 600,
-                        fontSize: '1rem',
+                        fontSize: '0.9rem',
                         cursor: 'pointer',
-                        boxShadow: '0 4px 15px rgba(78,205,196,0.3)',
+                        boxShadow: '0 3px 12px rgba(78,205,196,0.3)',
                         transition: 'all 0.3s ease',
                         width: '100%'
                       }}

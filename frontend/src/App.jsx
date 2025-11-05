@@ -42,56 +42,58 @@ function App() {
   const [searchQuery, setSearchQuery] = useState('');
 
   useEffect(() => {
-    // Load mock data immediately for testing
-    const mockTrainers = [
-      {
-        id: 1,
-        name: "Michael Jordan",
-        bio: "Former NBA superstar specializing in shooting fundamentals and mental toughness. Perfect for youth and adult players looking to elevate their game.",
-        specialties: "Shooting, All Around, Skills",
-        location: "Chicago, IL",
-        rate: 150,
-        photo: "https://images.unsplash.com/photo-1546961329-78bef0414d7c?ixlib=rb-4.0.3&auto=format&fit=crop&w=300&h=300&q=80"
-      },
-      {
-        id: 2,
-        name: "Sarah Thompson",
-        bio: "Professional skills coach with 10+ years experience. Specializes in developing young players aged 8-16 with fundamentals and confidence building.",
-        specialties: "Skills, Youth Development",
-        location: "Los Angeles, CA", 
-        rate: 75,
-        photo: "https://images.unsplash.com/photo-1494790108755-2616b612b786?ixlib=rb-4.0.3&auto=format&fit=crop&w=300&h=300&q=80"
-      },
-      {
-        id: 3,
-        name: "Coach Marcus Williams",
-        bio: "Former D1 college player focusing on strength and conditioning for basketball players. Expert in developing explosive power and endurance.",
-        specialties: "Strength and Conditioning, Live Play",
-        location: "Atlanta, GA",
-        rate: 100,
-        photo: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?ixlib=rb-4.0.3&auto=format&fit=crop&w=300&h=300&q=80"
-      },
-      {
-        id: 4,
-        name: "Jessica Chen",
-        bio: "Elite shooting specialist who trained with NBA players. Perfect for players wanting to improve their 3-point shooting and free throw accuracy.",
-        specialties: "Shooting, Skills",
-        location: "San Francisco, CA",
-        rate: 120,
-        photo: "https://images.unsplash.com/photo-1438761681033-6461ffad8d80?ixlib=rb-4.0.3&auto=format&fit=crop&w=300&h=300&q=80"
-      },
-      {
-        id: 5,
-        name: "Coach David Rodriguez",
-        bio: "High school varsity coach with 15 years experience. Specializes in team fundamentals, live game situations, and basketball IQ development.",
-        specialties: "All Around, Live Play, Skills",
-        location: "Miami, FL",
-        rate: 85,
-        photo: "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?ixlib=rb-4.0.3&auto=format&fit=crop&w=300&h=300&q=80"
+    // Fetch trainers from backend API
+    const fetchTrainers = async () => {
+      try {
+        console.log("Fetching trainers from backend...");
+        const response = await fetch('http://localhost:8080/api/trainers');
+        if (response.ok) {
+          const backendTrainers = await response.json();
+          // Transform backend data to match frontend structure
+          const transformedTrainers = backendTrainers.map(trainer => ({
+            id: trainer.id,
+            name: trainer.name,
+            bio: trainer.bio,
+            specialties: trainer.specialties,
+            location: trainer.location,
+            rate: trainer.rate,
+            photo: trainer.photoUrl
+          }));
+          setTrainers(transformedTrainers);
+          console.log("✅ Trainers loaded from backend:", transformedTrainers);
+        } else {
+          console.error("Failed to fetch trainers, using fallback data");
+          // Fallback to mock data if backend is not available
+          const mockTrainers = [
+            {
+              id: 1,
+              name: "Michael Jordan",
+              bio: "Former NBA superstar specializing in shooting fundamentals and mental toughness. Perfect for youth and adult players looking to elevate their game.",
+              specialties: "Shooting, All Around, Skills",
+              location: "Chicago, IL",
+              rate: 150,
+              photo: "https://images.unsplash.com/photo-1546961329-78bef0414d7c?ixlib=rb-4.0.3&auto=format&fit=crop&w=300&h=300&q=80"
+            },
+            {
+              id: 2,
+              name: "Sarah Thompson",
+              bio: "Professional skills coach with 10+ years experience. Specializes in developing young players aged 8-16 with fundamentals and confidence building.",
+              specialties: "Skills, Youth Development",
+              location: "Los Angeles, CA", 
+              rate: 75,
+              photo: "https://images.unsplash.com/photo-1494790108755-2616b612b786?ixlib=rb-4.0.3&auto=format&fit=crop&w=300&h=300&q=80"
+            }
+          ];
+          setTrainers(mockTrainers);
+        }
+      } catch (error) {
+        console.error("Error fetching trainers:", error);
+        // Fallback to mock data on error
+        setTrainers([]);
       }
-    ];
-    setTrainers(mockTrainers);
-    console.log("Mock trainers loaded:", mockTrainers);
+    };
+
+    fetchTrainers();
   }, []);
 
   const filtered = trainers.filter(tr => {
@@ -335,7 +337,7 @@ function App() {
         minHeight: 'calc(100vh - 80px)', 
         minWidth: '100vw', 
         width: '100vw', 
-        paddingTop: '4vh', 
+        paddingTop: '2vh', 
         overflow: 'auto', 
         position: 'relative', 
         zIndex: 10 
@@ -415,6 +417,107 @@ function App() {
               Search
             </button>
           </form>
+        </div>
+
+        {/* Category Navigation Section */}
+        <div style={{ 
+          marginTop: '0.5rem', 
+          width: '100%', 
+          maxWidth: '1000px', 
+          padding: '0 1.5rem',
+          marginBottom: '1rem'
+        }}>
+          
+          <div style={{ 
+            display: 'grid', 
+            gridTemplateColumns: 'repeat(auto-fit, minmax(150px, 1fr))', 
+            gap: '2rem',
+            justifyItems: 'center'
+          }}>
+            {/* Location Category */}
+            <div style={{
+              background: 'linear-gradient(135deg, rgba(255,255,255,0.08), rgba(255,255,255,0.03))',
+              backdropFilter: 'blur(20px)',
+              border: '1px solid rgba(255,255,255,0.15)',
+              borderRadius: '10px',
+              padding: '1rem',
+              maxWidth: '180px',
+              width: '100%',
+              boxShadow: '0 6px 24px rgba(0,0,0,0.2)',
+              textAlign: 'center'
+            }}>
+              <h4 style={{ 
+                margin: '0', 
+                fontSize: '1.2rem', 
+                fontWeight: 700, 
+                color: '#4ECDC4',
+                letterSpacing: '-0.5px'
+              }}>Global Locations</h4>
+            </div>
+
+            {/* Trainer Name Category */}
+            <div style={{
+              background: 'linear-gradient(135deg, rgba(255,255,255,0.08), rgba(255,255,255,0.03))',
+              backdropFilter: 'blur(20px)',
+              border: '1px solid rgba(255,255,255,0.15)',
+              borderRadius: '10px',
+              padding: '1rem',
+              maxWidth: '180px',
+              width: '100%',
+              boxShadow: '0 6px 24px rgba(0,0,0,0.2)',
+              textAlign: 'center'
+            }}>
+              <h4 style={{ 
+                margin: '0', 
+                fontSize: '1.2rem', 
+                fontWeight: 700, 
+                color: '#FF6B6B',
+                letterSpacing: '-0.5px'
+              }}>Certified Trainers</h4>
+            </div>
+
+            {/* Workout Type Category */}
+            <div style={{
+              background: 'linear-gradient(135deg, rgba(255,255,255,0.08), rgba(255,255,255,0.03))',
+              backdropFilter: 'blur(20px)',
+              border: '1px solid rgba(255,255,255,0.15)',
+              borderRadius: '10px',
+              padding: '1rem',
+              maxWidth: '180px',
+              width: '100%',
+              boxShadow: '0 6px 24px rgba(0,0,0,0.2)',
+              textAlign: 'center'
+            }}>
+              <h4 style={{ 
+                margin: '0', 
+                fontSize: '1.2rem', 
+                fontWeight: 700, 
+                color: '#45B7D1',
+                letterSpacing: '-0.5px'
+              }}>Focused Workouts</h4>
+            </div>
+
+            {/* Age Group Category */}
+            <div style={{
+              background: 'linear-gradient(135deg, rgba(255,255,255,0.08), rgba(255,255,255,0.03))',
+              backdropFilter: 'blur(20px)',
+              border: '1px solid rgba(255,255,255,0.15)',
+              borderRadius: '10px',
+              padding: '1rem',
+              maxWidth: '180px',
+              width: '100%',
+              boxShadow: '0 6px 24px rgba(0,0,0,0.2)',
+              textAlign: 'center'
+            }}>
+              <h4 style={{ 
+                margin: '0', 
+                fontSize: '1.2rem', 
+                fontWeight: 700, 
+                color: '#FFD700',
+                letterSpacing: '-0.5px'
+              }}>Diverse Skill Levels</h4>
+            </div>
+          </div>
         </div>
 
       </main>
